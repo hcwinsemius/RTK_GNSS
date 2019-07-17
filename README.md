@@ -9,14 +9,24 @@ both on rover and base station side, an internet connection (WiFi) is available.
 This can be established through for instance a hotspot from a smart phone.
 
 ## Materials required:
-- 2 Ardusimple dual frequency kits (one as base, one as rover). These shuld in principle be pre-configured
-- 2 Powerbanks (e.g. 20,000 mAh can be brought on a plane if NOT charged!)
-- 2 On-The-Go (OTG) cables
-- 4 data/power cables from micro USB to USB-A
-- 2 raspberry pi zero W (Rpi0)
-- 2 SD cards (8Gb or 16Gb)
+Basis:
+- 2 Ardusimple dual frequency kits inc. antennas (one as base, one as rover). These shuld in principle be pre-configured
+- 2 Powerbanks (we recommend 20,000 mAh can be brought on a plane if NOT charged!)
+- 2 data/power cables from micro USB to USB-A
 
-## Basic principle of setup
+In case you want to use corrections via a server (NTRIP) and internet:
+Make sure the ardusimples are equipped with (male) header pins
+- 2 raspberry pi zero W (Rpi0 with header pins)
+- 2 SD cards (8Gb or 16Gb)
+- 2 additional data/power cables
+- 2 On-The-Go (OTG) cables
+- 4 female-to-female jumper wires
+
+In case you want to work with Long-Range radio (no internet!):
+- 2 XBee radio modules (make sure ardusimples are equipped with XBEE radio parts)
+
+
+## Setup with NTRIP connections with raspberry pis
 The principle is as given in the schematic below. The base station is setup such 
 that it collects Real-Time-Correction Messages (RTCM3) from the base-station Ardusimple. The Rpi0
 of the base station retrieves these either via UART or USB from the ardusimple kit and sends them to an existing Network Transport of RTCM data over IP (NTRIP) caster in the cloud (in this example we use RTK2go.com, which is free for the moment).
@@ -24,15 +34,13 @@ The Rpi0 therefore only does one thing: Passing through RTCM3 messages to a cast
 
 The Rpi0 of the rover also connects to the NTRIP caster and forwards the RTCM3 messages to the rover Ardusimple. The internal RTK engine of the Ardusimple board computes the RTK positions and the Rpi0 collects these in the form of 'NMEA messages'. The Rpi0 does therefore 2 things. Forwarding RTCM from the server to the Ardusimple AND retrieving/logging NMEA messages from the Ardusimple.
 
-## Setup of base and rover station
-
-### Install Raspbian lite image on the rasp zeros
+### Setup raspberry pi zeros
 Both raspberry pis require raspbian lite, and a number of libraries. This requires a simple raspbian install with a few tweaks, described below. Repeat this process 2 times.
 
 * Download raspbian lite zip file from the raspbian download pages
-* Follow instruction to install it on SD card (e.g. use etcher to get this done)
+* Follow instructions to install it on SD card (e.g. use etcher to get this done)
 * Now start up the Rpi0 using the SD card. Preferrably have a monitor with mini-HDMI cable and a external keyboard to get the first steps done. When logging in always use user `pi`. When typing a password, use `raspberry` (note: in linux, passwords do not show up on screen! So expect that you don't see anything happening while typing a password, but in the background it will be typed). 
-* If you want to use the connection scheme with header pins, then you need to enable those header pins (RX/TX). If you want to use the RX/TX connection (and not USB, this gives more flexibility), the RX/TX UART connections should be enabled on the Rasp zero. This can be done as follows: 
+* If you want to use the connection scheme with header pins (shown later), then you need to enable those header pins (RX/TX). This gives the benefit that the usb+gps port will remain available for connection with a smart phone. The RX/TX UART connections should be enabled on the Rasp zero. This can be done as follows: 
 ```
 nano /boot/config.txt
 ```
@@ -62,8 +70,7 @@ For fieldwork, the SSID and passphrase (psk) has to be configured according to y
  
 Now you are ready to access the rasp zero through ssh.
 
-
-4. Get the 2.4.3 branch of RTKLIB (in the past 2.4.3 performed better with ublox data than the master branch 2.42. However, for streaming purposes the master (2.4.2) branch may be sufficient too.) to /home/pi/ you can get this through typing:
+* Get the 2.4.3 branch of RTKLIB (in the past 2.4.3 performed better with ublox data than the master branch 2.42. However, for streaming purposes the master (2.4.2) branch may be sufficient too.) to /home/pi/ you can get this through typing:
 ```
 cd
 wget https://github.com/tomojitakasu/RTKLIB/archive/rtklib_2.4.3.zip
@@ -80,7 +87,8 @@ after that, the package should be ready to install.
 TODO: We will supply an image of raspian precompiled libraries that has the package ready-to-use. This skips the previous steps and only the wifi connection has to be configured with SSID and password.
 
 ### Rpi0 - Ardusimple connections
-The Ardusimple and Rpi0 can be connected very simply through a USB connection. 
+The Ardusimple and Rpi0 can be connected very simply through a USB connection. Then you cannot use a smart phone connection anymore.
+ 
 The picture below shows what it should look like.
 
 <<PICTURE>>
@@ -94,6 +102,9 @@ IOREF: pin 2-1
 TX1: pin 1-5
 RX1: pin 1-3
 ```
+Below, a picture with the connections is shown.
+
+<<PICTURE>>
 
 ### Connecting to serial port of ardusimple
 You need to know which device the ardusimple is. The easiest way to check this out is to go to the /dev folder, and type 
@@ -117,7 +128,6 @@ If things work as expected, the LED on the Ardusimple saying `NO RTK` should swi
 ```
 
 ## Setup your own base station
-
 
 TODO
 
