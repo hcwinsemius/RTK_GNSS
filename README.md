@@ -25,7 +25,44 @@ Make sure the ardusimples are equipped with (male) header pins
 In case you want to work with Long-Range radio (no internet!):
 - 2 XBee radio modules (make sure ardusimples are equipped with XBEE radio parts)
 
+## Setup with direct LR radio corrections and a smartphone - Android only!
+This demonstrates how you can use a direct radio link to collect data, and use your smart phone to collect points. This requires usage of the 2 XBee radio modules that form part of the LR enabled ardusimple package.
 
+The principle is given in the schematic below.
+
+<<PICTURE>>
+
+### Setting up the base station
+The base station is very simple to setup. Make sure that you cover the bottom of the antenna with something that prevents indirect signals coming in preventing multi-path issues. The following connections should be in place
+* GNSS antenna in GNSS port
+* LR radio antenna in Xbee port 
+* External power source to POWER+XBEE USB port. Use one of the batteries, or if available a wall outlet. You can also use the USB+GPS port, but you can use this to check the status and available satellites.
+
+IMPORTANT: Position the GNSS antenna on a truly open space and keep it there without any movements! I put it on my rooftop, with no larger buildings in the surroundings. This gave an adequate reception of over 30 satellites. The rover will usually see less, but rover and base should use the overlapping satellites in view to resolve the position with RTK. You can check the amount of satellites by connecting POWER+GPS USB to a windows computer and use the u-center application (not explained here, check the manual of u-center). The base station will measure until the standard deviation of error is below 2 meters or so. When that is done, the base station will start to transmit Real Time Correction Messages (RTCM) automatically through the LR Radio. Should take about 10 minutes for this to happen.
+
+![tty](images/base_station_LR.jfif)
+
+### Setting up the rover station
+The rover should look like the picture below. I mounted my rover on a typical simple camera rig, preferrably you use a right where you can easily control the distance between ground floor and the height of the antenna, so that you know the exact position of the antenna above ground. You can also mount the antenna on your head with a hat and wires for instance, which should give you a pretty reasonable estimate of the elevation if you measure your own height prior to the observation. Make sure the following connections are in place.
+* GNSS antenna in GNSS port
+* LR radio antenna in Xbee port
+* Battery in POWER+XBEE USB port
+* Smart phone (Android) to POWER+GPS USB port (in the figure below I only use my smart phone, also to power the unit, but this'll drain your smart phone quickly!)
+
+
+![tty](images/rover_station_LR.jfif)
+ 
+### Setting up your smart phone to replace internal GPS with the RTK GPS
+We want to use the smart phone to do a survey with our favourite survey app. We recommend OpenDataKit (ODK, see https://opendatakit.org/) as you can use this to build your own survey form and use it to observe anything you want to. Within an ODK survey, you can also take Geopoints or Geotraces with your internal GPS. Here we want to do the same but then using the RTK GPS setup just built. You'll need to do the following to get this done:
+* Install GNSS commander from the Google Play Store (free version)
+* Start up the application and swipe from left part of screen to right, open settings
+* Select GPS data and select USB device as input
+* In "Additional Settings" set the USB device to "Generic", Baudrate to 38400 and Forward RTCM data to device to "On"
+The RTK GPS should now work and when the rover is in sufficient line of sight with the LR antenna, receive corrections from the base station. It may take a few minutes before a GPS status changes to FIXED, but it shouldn't take very long. If it says "AUTONOM" then there is no RTCM message reception. Perhaps you are too far from the base station to receive these. 
+
+If this works appropriately, you can replace the internal GPS location with the location provided by the RTK GPS. For this you need to select GNSS commander as a mock location application (see https://www.xda-developers.com/fake-android-location/ on how to do this) and switch on the "Set GPS mock location" in the GPS data settings in GNSS commander.
+
+Check if you indeed get a very accurate location, by opening Google maps and move the antenna a few cm. You should be able to distinguish this now. If this works, you are ready to do a super-accurate survey with ODK or other survey apps for Android. 
 ## Setup with NTRIP connections with raspberry pis
 The principle is as given in the schematic below. The base station is setup such 
 that it collects Real-Time-Correction Messages (RTCM3) from the base-station Ardusimple. The Rpi0
