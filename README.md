@@ -89,11 +89,11 @@ enable_uart=1
 ```
 network={
 ssid="<NAME NETWORK>"
-psk=<PASS PHRASE>
+psk="<PASS PHRASE>"
 key_mgmt=PSA-PSK
 }
 ```
-`key_mgmt` is probably not required.
+`key_mgmt` is probably not required. For iphone connection, the `key_mgmt=WPA-PSK` is required.
 For fieldwork, the SSID and passphrase (psk) has to be configured according to your mobile WiFi hotspot(s).
 * Enable ssh (secure shell) by creating empty ssh file on /boot or using raspi-config. Option 1 can be done by typing:
  ```
@@ -104,6 +104,8 @@ For fieldwork, the SSID and passphrase (psk) has to be configured according to y
  sudo raspi-config
  ``` 
  Now you can disconnect the screen and keyboard, and simply login to the Rpi0 through your favourite ssh connector (on windows: use putty). If you want to know the ip address, type `ip addr` on command line and write down the number in wlan0 after the first occurrence of `inet`. Usually the local ip address looks like 192.168.xxx.xxx. In home networks the first xxx is often 178.
+ 
+Another way to connect over wifi is by connecting to the address `raspberrypi.local`. If you are in the same network as the raspberry it should work that way.
  
 Now you are ready to access the rasp zero through ssh.
 
@@ -117,7 +119,6 @@ unzip it, move into the right folder and compile and install it as follows:
 cd RTKLIB-rtklib_2.4.3/app
 sudo make
 sudo make install
-sudo make 
 ```
 after that, the package should be ready to install.
 
