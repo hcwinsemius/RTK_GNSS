@@ -106,6 +106,10 @@ For fieldwork, the SSID and passphrase (psk) has to be configured according to y
  Now you can disconnect the screen and keyboard, and simply login to the Rpi0 through your favourite ssh connector (on windows: use putty). If you want to know the ip address, type `ip addr` on command line and write down the number in wlan0 after the first occurrence of `inet`. Usually the local ip address looks like 192.168.xxx.xxx. In home networks the first xxx is often 178.
  
 Another way to connect over wifi is by connecting to the address `raspberrypi.local`. If you are in the same network as the raspberry it should work that way.
+
+* Optional: Another way to remotely connect via USB to the raspberry is by changing two files in the /boot partition: In the config.txt add the line `dtoverlay=dwc2` at the very end of the file. In the cmdline.txt add a space behind the `rootwait` and add the following: `modules-load=dwc2,g_ether`. If you connect a USB cable from your notebook to the raspberry you can now access it via SSH. Note that no internet connection is shared and may just be useful for debugging or compiling purposes.
+
+* Optional, experimental Bluetooth connection for displaying the rover position: There is a good tutorial here: https://scribles.net/setting-up-bluetooth-serial-port-profile-on-raspberry-pi/ where we only have to follow steps 2 and 3. By launching an additional script that listens to hci0 we are able forward NMEA to the virtual bluetooth serial port. A very simple rover bluetooth script is provided at a later stage in this repository. Another possibility that is still under consideration is the bluedot app (https://bluedot.readthedocs.io/en/latest/index.html).
  
 Now you are ready to access the rasp zero through ssh.
 
@@ -165,12 +169,14 @@ If things work as expected, the LED on the Ardusimple saying `NO RTK` should swi
 /home/pi/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://ttyACM0:38400 -out file:///home/pi/rover_test.ubx
 ```
 
-## Setup your own base station
+## Setup your own base station for internet correction streaming purposes
 
-TODO
+To stream RTCM data to an NTRIP caster (e.g. rtk2go.com), we have to configure the base station to enable RTCM3 messages 1005, 1074, 1084, 1124 and 1230. These must be sent via the port that we selected for this purpose (e.g. for USB). No other message types may be transmitted from that port (no UBX or NMEA. Only RTCM). Note that this way for the base station, no raw data can be logged with only one connection. To overcome this, use soldered header pins to transmit raw data. TODO
+
 
 ## Base-Rover Automatic Transmission
 
+TODO: Autostart is performed via a configured root crontab. For this, connect to the raspberry via ssh and type `sudo crontab -e`. Then add at the end of the file the command with the startup script. Note that if you use the supplied raspberry image for base and rover, you do not need to perform this step.
 TODO: Autostart of streaming RTCM to the NTRIP caster (on base raspi) and forwarding RTCM to the rover (on rover raspi). Saving the ublox logged-data on the rover SD card.
 
 ## NOTES on u-center configurations (TODO)
