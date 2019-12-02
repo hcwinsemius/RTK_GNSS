@@ -159,6 +159,8 @@ e.g. a full example looks like this:
 
 ```sala 11.9264 57.3958 0.0000```
 
+![screeshot of holt.oso.chalmers.se website](images/ocean.png)
+
 Enter your email address and click on submit. You will get an email with the Loading parameters.
 
 Once you get the email, copy the content starting with:
