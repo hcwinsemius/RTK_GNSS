@@ -284,6 +284,10 @@ So it should look like this:
 -	TX - RX
 -	RX - TX
 
+![Jumper cable setup](Ardusimple_RPi0_jumper_wiring_schematic.jpeg)
+
+![Jumper cable setup example photo](Ardusimple_RPi0_jumper_wiring_photo.jpeg)
+
 Make really sure that these connections are correct! If these ones are connected wrong, then the GNSS receiver may get destroyed. Note that for GND at the GNSS receiver are two pins. You can use either one of them, but make sure you are not using the ‘empty’ pin on the top.
 
 Set up the station after the configuration in 4A has been performed. After about 24h, retrieve the raw data and [perform PPP with the data](link to relevant section).
