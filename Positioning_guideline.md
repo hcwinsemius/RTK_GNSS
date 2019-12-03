@@ -244,6 +244,49 @@ To configure this:
 - After that, go to UBX-CFG-CFG (Configuration)
   - Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
 
+### 4A1A) Base determines its own position
+Quick and dirty. Hence, not very accurate.
+
+- Go to View-Messages view. A window opens.
+  - In that window go to UBX-CFG-TMODE3 (Time Mode 3)
+  - Click on Mode and select 1 - Survey in
+  - Type in the minimum observation time of 120 and required Position accuracy of 2.5. Lowering this value can be done, but the startup (until RTCM becomes available will take significantly longer. Also, this method will never be as accurate as PPP-derived coordinates).
+  - Click on Send.
+- Go to UBX-CFG-CFG (Configuration). Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
+
+Now the base station is configured to determine its own position. Since we still want the raw data, this cannot be done via the USB device. Instead we can use UART1 and do the same with jumper cables.
+
+To activate transmission of raw data over UART1 (jumper cables), open the message view again (View-Messages)
+- Click on UBX-CFG-MSG (Messages)
+  - select the message 02-15 RXM-RAWX and activate it on UART1.
+  - Click on send.
+- Make sure under UBX-CFG-PRT (Ports) and select UART1 as Target. Check that the Protocol out contains at least UBX and the Baudrate is set according for your needs (e.g. 115200)
+- After that, go to UBX-CFG-CFG (Configuration)
+- Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
+
+### 4A1B) Give the base station more precise coordinates
+If a good position is inserted here, the rover coordinates will be more accurate than selecting the method from 4A1A.
+
+- Go to View-Messages view. A window opens.
+- Go to UBX-CFG-TMODE3 (Time Mode 3)
+- Click on Mode and select 2 - Fixed Mode
+- Insert XYZ coordinates and the accuracy in meters or Lat/Lon/Altitude Position.
+- Click on Send.
+- After that, go to UBX-CFG-CFG (Configuration)
+- Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
+
+To check if everything works, investigate if the base station transmits the message 1005 (It contains the base position) by looking at the View-Messages view. If under the point RTCM3 the message 1005 is black, then it is set accordingly. This is however only possible, if the base station antenna is already in the right place and connected to the device at the moment.
+
+We also still want the raw data. As in step 4A1A, this can only be done via the UART1 interface (jumper cables).
+
+To activate transmission of raw data over UART1 (jumper cables), open the message view again (View-Messages)
+- Click on UBX-CFG-MSG (Messages)
+  - select the message 02-15 RXM-RAWX and activate it on UART1.
+  - Click on send.
+- Make sure under UBX-CFG-PRT (Ports) that the Protocol out on UART1 contains at least UBX and the Baudrate is set according for your needs (e.g. 115200). Click on send.
+- After that, go to UBX-CFG-CFG (Configuration)
+- Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
+
 ## 4A2) Post-Processing
 Can be done by using 'only the raw data'.
 
