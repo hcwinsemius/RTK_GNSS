@@ -117,6 +117,8 @@ To add the approximate XYZ position to the RINEX file, use this:
 
 ```./gfzrnx_lx -finp YOUR_RINEX_FILE -fout DESTINATION_FOLDER/::RX3:: -kv -crux crux.conf -f```
 
+In case you don't have the cartesian coordinates of the point you're trying to use for the crux.conf file, [this NRCAN tool](https://webapp.geod.nrcan.gc.ca/geod/tools-outils/trx.php?locale=en) can do the conversion.
+
 # 3) Precise Point Positioning (PPP)
 To be used if:
 - long time series (several hours)
