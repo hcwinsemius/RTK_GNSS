@@ -473,55 +473,69 @@ Insert the rover SD card. In the rootfs partition under ```/home/pi/startup.sh``
 Is activated automatically in the Rover SD cards / images that are provided. It assumes that the rover receiver is configured correctly and connected via the Power+USB port.
 
 # 7) More practical information
-For precise applications it is very important that the base station position is determined carefully (e.g. by PPP – see section 3) and set to fixed mode in the u-center application (see section 4A1B).
 
-The closer the rover is to the base station, the easier it is to get a ‘fixed’ solution and the smaller the error caused by tropospheric effects is (i.e. water vapor in the atmosphere).
+## Hints for accuracy
+- For precise applications it is very important that the base station position is determined carefully (e.g. by PPP – see section 3) and set to fixed mode in the u-center application (see section 4A1B).
+- The closer the rover is to the base station, the easier it is to get a ‘fixed’ solution and the smaller the error caused by tropospheric effects is (i.e. water vapor in the atmosphere).
+- Use a tripod to place base and rover.
+- If the small black patch antenna is used (ANN-MB-00), use a circular 10 cm diameter metal ground plane and place the antenna in the middle of it. This will improve the results noticeably.
+- Be aware of canopy or other objects close to your antenna. To ensure best results, always place the base antenna in a clear-sky area. If the base antenna is partially covered, no precise positions can be obtained. This also applies to the rover, can however, be mitigated partially with a longer observation period (if the multipath effect is not too severe).
+- Plan ahead for RTK.
+  - If you want to place a new base station for your survey, look for a suitable location (see also section 4B) close to your area of interest (preferably below 5km) that is accessible and has a clear-sky environment.
+  - I recommend to place the base station for one day if possible (8 hours should work too) and log the raw data. Mark the location and measure the height of the antenna. Download the raw data, convert it, perform PPP (see section 3) and set the location of the base station to ‘fixed mode’ (see section 4A1B).
+  - Then place the base antenna at exactly the same height/position and check the datastream, if the RTCM3 1005 message is transmitted. If it is, then you can start your rover measurements in RTK.
+- Base station antennas are sensitive to multipath and shadowing. Suggestion is to mount antennas at least 2-4 meters above surrounding obstacles with a metal pole and fix the pole with wire ropes. This will increase the usability of the base station. Of course the PPP must be done after the base station is placed in this way.
 
-Use a tripod to place base and rover.
+# 8) Post-Processing in RTKLIB
+This requires to compile the rnx2rtkp application in RTKLIB. Again, for this RTKLIB 2.4.3 is required (the same version used for convbin).
 
-If the small black patch antenna is used (ANN-MB-00), use a circular 10 cm diameter metal ground plane and place the antenna in the middle of it. This will improve the results noticeably.
+Navigate in the command line to the RTKLIB folder and:
 
-Be aware of canopy or other objects close to your antenna. To ensure best results, always place the base antenna in a clear-sky area. If the base antenna is partially covered, no precise positions can be obtained. This also applies to the rover, can however, be mitigated partially with a longer observation period (if the multipath effect is not too severe).
-
-Plan ahead for RTK. If you want to place a new base station for your survey, look for a suitable location (see also section 4B) close to your area of interest (preferably below 5km) that is accessible and has a clear-sky environment. I recommend to place the base station for one day if possible (8 hours should work too) and log the raw data. Mark the location and measure the height of the antenna. Download the raw data, convert it, perform PPP (see section 3) and set the location of the base station to ‘fixed mode’ (see section 4A1B). Then place the base antenna at exactly the same height/position and check the datastream, if the RTCM3 1005 message is transmitted. If it is, then you can start your rover measurements in RTK.
-
-A note about your current base station: The location is not ideal. The antennas are subject to increased multipath and shadowing of the rooftop. Suggestion is to mount it 2 meters higher up with a metal pole and fix the pole with wire ropes. This will increase the usability of the base station. Of course the PPP has to be repeated.
-8) Post-Processing in RTKLIB
-This requires to compile the rnx2rtkp application in RTKLIB.
-Again, for this RTKLIB 2.4.3 is required (the same version used for convbin).
-Navigate in the command line to the RTKLIB folder to
+```
 cd app/rnx2rtkp/gcc
 make
-
+```
 if you see iers.a does not exist, then
-sudo apt-get install gfortran
+
+```sudo apt-get install gfortran```
+
 try to make the rnx2rtkp again.
-If that does not work, navigate to RTKLIB/lib/iers/gcc and make
 
+If that does not work:
 
-This process will take some minutes.
+```cd RTKLIB/lib/iers/gcc
+make
+```
 
-This will create an executable which is a command line application. It takes RINEX observations (rover and base) and navigation data to compute rover positions.
-
+This process will take some minutes. It will create an executable which is a command line application. It takes RINEX observations (rover and base) and navigation data to compute rover positions.
 
 To download base station data, connect via ssh to the raspberry pi (base station) and locate the file(s) that you are interested in. The standard password for the user pi is raspberry.
-The HOT_TZ_001 IP address is (at the moment) 192.168.100.247
+
 You can find the IP addresses of the connected devices in the router configuration.
 
 Copy the filename of the respective base station log file. To download the data, type
-scp pi@192.168.100.247:/home/pi/FILENAME.ubx /home/hot-admin/Documents/RTK/Data/ubx/TARGETFILE.ubx
 
-Convert the base station data and rover data with the python script. Add the base station position to the RINEX base data (see section 2C). Make sure that navigation data (under ../nav/) has been created by the rover.
+```
+scp pi@192.168.100.247:/home/pi/FILENAME.ubx /home/hot-admin/Documents/RTK/Data/ubx/TARGETFILE.ubx
+```
+
+Convert the base station data and rover data with the [python script](conversion_scripts/main.py). Add the base station position to the RINEX base data (see section 2C). Make sure that navigation data (under ../nav/) has been created by the rover.
 
 The configuration itself is done via command line arguments and requires some insight to the application. In principle for a base-rover setup there are two positioning modes that we can choose from: a kinematic solution (if the rover is moving) and a static solution (if the rover is not moving). Beware that if you select a static solution, the full RINEX rover observation data must be from the same point, so it may not move. The only difference between both solution modes is that the estimated rover position will be tightly constrained in the static solution but loose in the kinematic solution.
+
 Navigation data is required too. This can be either obtained from the converted .ubx files (if the package SFRBX is enabled or downloaded from the internet.
 For a first try it is always good to user GPS-only satellites because it is the most stable processing in RTKLIB. Furthermore, the ambiguity resolution for e.g. GLONASS and BeiDou is rather complicated and not straight forward (depends if the same receiver is used etc.).
+
 There are different methods to solve for the integer ambiguities in general (obtaining a ‘fixed’ solution). For a static solution, I definitely recommend the fix-and-hold integer ambiguity resolution, though the results on a kinematic solution may be acceptable too. There are more options, but the second option that one could try is the continuous ambiguity resolution. The performance is typically measured with the amount of fixed solutions in the data. Personally, the fix-and-hold solution performed best for my cases.
 
 One example configuration:
+
+```
 ./rnx2rtkp -o output.pos -p 2 -m 5 -h -v 3.0 -y 2 -g -sys G -t -c rover.rnx base.rnx navigationdata.19n
+```
 
 This will output the positions into output.pos. -p 2 means it is kinematic, -m 5 elevation cutoff at 5 degrees (we discard all data below 5 degrees), -h means fix-and-hold ambiguity resolution, -v 3.0 is the validation threshold for the ambiguities (should not be changed), -y 2 means to output the residuals, -g outputs lat/lon positions, -sys G means GPS-only satellites, -t sets the time format to yyy/mm/dd hh:mm:ss.ss, -c means a combined kalman filter is used (forward and backward).
+
 It requires however, that the base position is set in the base RINEX header. See section XXX. If it is not, we have to supply it separately e.g. in lat lon h with the option
 
 -l <latitude> <longitude> <height>
@@ -532,63 +546,51 @@ Things that can be changed in this configuration are:
 -h	to 	(can be removed) – it will use a continuous ambiguity resolution instead
 -sys	to	-sys G,R,E,C
 
-9) Troubleshooting Raspberry Pi logging
+# 9) Troubleshooting Raspberry Pi logging
 If the base station is not logging data correctly, the first thing to check is that the wiring is correct.
 
-Base does not log data (*.ubx files):
+#### Base does not log data (*.ubx files):
+
 If the data is still not logged afterwards, remotely connect via ssh to the Raspberry Pi
-E.g. via the IP address, or via this snippet:
 
-ssh pi@raspberrypi.local
+E.g. via the IP address, or by ```ssh pi@raspberrypi.local```
 
-Check if the latest .ubx file size is increasing over time (e.g. via repeating ls -al and checking the file size manually). If the file size is increasing, the data is probably logged correctly.
-If it does not, then check the running processes with
+Check if the latest .ubx file size is increasing over time (e.g. via repeating ls -al and checking the file size manually). If the file size is increasing, the data is probably logged correctly. If it does not, then check the running processes with ```ps -aux```.
 
-ps -aux
+There should be two processes from str2str. One that streams the data to the ntrip and the other one that logs the data into a file. If there is only one process from str2str, it means that the UART interface was probably not found correctly. This typically means that the wiring is not correctly set up. Type ```ls /dev/tty``` and press tab twice times to see if ttyS0 is there. If not, UART1 (TX, RX) is not found. The wiring is probably the problem or UART1 is not active on the raspberry pi (enable_uart=1 in config.txt on the boot partition).
 
-There should be two processes from str2str. One that streams the data to the ntrip and the other one that logs the data into a file. If there is only one process from str2str, it means that the UART interface was probably not found correctly. This typically means that the wiring is not correctly set up. Type
-
-ls /dev/tty
-
-and press tab some times to see if ttyS0 is there. If not, UART1 (TX, RX) is not found. The wiring is probably the problem or UART1 is not active on the raspberry pi (enable_uart=1 in config.txt on the boot partition).
 If ttyS0 is there, the automatic logging stream did not start. This may happen if the raspberry device is turned on before the antenna could capture any satellite data. If the antenna is in more or less clear-sky environment this should be however not the case. Instead it may be that the internal voltage is not correctly set up (check the IOREF and 5V_IN pins).
-To start the logging manually, copy the file-logging part from the startup script and execute it in the command line (but remember to remove the ‘&’ at the end). Monitor the output from it. If in both columns (data-in and data-out) there are quite big numbers, the logging works. If that is the case, you can end the process again and restart it with the ‘&’ at the end. The process should now work in the background. You can check again if the file size is increasing or not with ls -al.
+
+To start the logging manually, copy the file-logging part from the startup script and execute it in the command line (but remember to remove the ‘&’ at the end). Monitor the output from it. If in both columns (data-in and data-out) there are quite big numbers, the logging works. If that is the case, you can end the process again and restart it with the ‘&’ at the end. The process should now work in the background. You can check again if the file size is increasing or not with ```ls -al```.
 
 To hook upon a running stream (e.g. to check out the running str2str process), locate the PID via ps -aux and hook upon the stream via
 
+```
 sudo tail -f /proc/PID/fd/1
+```
 
-Register your base station at rtk2go:
+#### Register your base station at rtk2go:
+
 Bear in mind that from now on every new mountpoint has to be registered on their website. So if you have two base stations running simultaneously, then both need a registration on their website (http://www.rtk2go.com/new-reservation/)
 After max. ~8hours (they claim) to send a password to you via email.
-Base does not stream data to rtk2go:
+
+#### Base does not stream data to rtk2go:
 Check the cabling and USB connections. Remember that the OTG cable has to be plugged into the USB slot where the antenna cable is on the ardusimple board.
 For troubleshooting, connect via ssh to the raspberry pi.
-To check if streaming / logging are running on the raspberry, type
+To check if streaming / logging are running on the raspberry, type ```ps -aux | grep str2str```. If there are two programs from str2str running (must be 3 lines in total then), it means that the script at least tries to send the data.
 
-ps -aux | grep str2str
+Now it is recommended to check what’s going on with the streaming. For that hook on to the output of the stream via the process ID that you can see from the ps -aux command (the number on the left): ```sudo tail -f /proc/XXX/fd/1``` Where XXX is the process number.
 
-If there are two programs from str2str running (must be 3 lines in total then), it means that the script at least tries to send the data.
-Now it is recommended to check what’s going on with the streaming. For that hook on to the output of the stream via the process ID that you can see from the ps -aux command (the number on the left):
-
-sudo tail -f /proc/XXX/fd/1
-
-Where XXX is the process number.
 Check if the messages on the right are between ~2000bps and ~5000bps meaning that RTCM are probably sent from the receiver to the raspberry. If not, check the configuration of the ardusimple.
-If that is the case and the stream is not running online, then it will probably state something like rtcv error. It’s likely that your password is not configured correctly. Check the startup script. Typically that is the startup.sh, but check with
 
-sudo crontab -l
+If that is the case and the stream is not running online, then it will probably state something like rtcv error. It’s likely that your password is not configured correctly. Check the startup script. Typically that is the startup.sh, but check with ```sudo crontab -l``` which scripts are executed on startup. For example, it may be base.sh and base_logging.sh, So you’d have to configure the base.sh for streaming and adjust the mountpoint name and password there.
 
-Which scripts are executed on the startup. I.e. it may be base.sh and base_logging.sh. So you’d have to configure the base.sh for streaming and adjust the mountpoint name and password there.
-Before you restart the stream, end the current streaming attempt by killing it.
+Before you restart the stream, end the current streaming attempt by killing it with ```sudo kill XXX``` where XXX is the process number found from the ps -aux command.
 
-sudo kill XXX
-
-Where XXX is the process number found from the ps -aux command.
 To restart the stream manually, copy the command and leave the ‘&’ out at the end. Type a sudo before the command and hit enter.
+
 It will restart the stream. Monitor if the stream is up again and if you are satisfied, end the stream with CTRL-C and restart it in the background. To do this, use the same command as before and add the ‘&’ at the end.
+
 Now you can close the ssh session by just hitting the ‘x’ of the terminal window. It will give you a warning but that is okay for now. Check online if your stream is still there.
 
-
-
-https://www.youtube.com/watch?v=R0Hry5kR1jY
+[An explanatory video](https://www.youtube.com/watch?v=R0Hry5kR1jY):
