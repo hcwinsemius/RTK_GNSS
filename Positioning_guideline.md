@@ -48,7 +48,7 @@ After that, go through the installation process, BUT select a folder that is on 
 
 After installation, navigate again on the command line to where you installed the program and type ```wine u-center.exe```. This will start the u-center application.
 
-## 1E) Etcher
+## 1E) Flashing images onto SD cards to run on the Raspberry Pi Zero
 Etcher flashes saved images to an SD card. It is free, easy to use and validates after finishing.
 
 To download go to [www.balena.io/etcher](www.balena.io/etcher).
@@ -435,7 +435,9 @@ If a RTK survey has been performed, one can read the positioning data from the r
 #### About the column names:
 The Reference Carrier Range Status indicates the positioning status (0->Stand-alone, 1->Float, 2->Fix). So you should always aim for the fix solution if you want to get an accurate position. Remember that Alt HAE is the height above ellipsoid and Alt MSL the mean sea level height.
 
-# 6) SD card configurations
+# 6) Raspberry Pi configuration
+
+## 6A) Using Balena Etcher
 I provide two images (.img files) that contain already pre-compiled and pre-configured programs. These images can be flashed onto an SD card of 16GB or larger. If the SD card is too small (some supposedly 16GB SD cards are actually just a bit smaller) the image file can be shrunk [like so](https://softwarebakery.com//shrinking-images-on-linux). 
 
 They can also be downloaded here:
@@ -448,7 +450,77 @@ Password to access them is available upon request (we'll move them to a location
 
 If one wishes to flash another empty SD card as a base or rover, one can use the provided images. For this I recommend the program Etcher. One only has to select an image and the SD card as target. It will create two new ‘partitions’ on the SD card (bootfs and rootfs).
 
-The provided SD cards work in a way that data logging is started automatically after about 2 minutes the power has been turned on.
+## 6B) Using dd (Disk Dump)
+
+Before inserting the SD card into the reader, run the following command to find out which disks are currently mounted:
+
+```
+df -h
+```
+
+Which will return something like this:
+```
+Filesystem 1K-blocks Used Available Use% Mounted on
+rootfs 29834204 15679020 12892692 55% /
+/dev/root 29834204 15679020 12892692 55% /
+devtmpfs 437856 0 437856 0% /dev
+tmpfs 88432 284 88148 1% /run
+tmpfs 5120 0 5120 0% /run/lock
+tmpfs 176860 0 176860 0% /run/shm
+/dev/mmcblk0p1 57288 14752 42536 26% /boot
+```
+
+Insert the SD card into the reader and type ```df -h``` again:
+
+```
+Filesystem 1K-blocks Used Available Use% Mounted on
+rootfs 29834204 15679020 12892692 55% /
+/dev/root 29834204 15679020 12892692 55% /
+devtmpfs 437856 0 437856 0% /dev
+tmpfs 88432 284 88148 1% /run
+tmpfs 5120 0 5120 0% /run/lock
+tmpfs 176860 0 176860 0% /run/shm
+/dev/mmcblk0p1 57288 14752 42536 26% /boot
+/dev/sda5 57288 9920 47368 18% /media/boot
+/dev/sda6 6420000 2549088 3526652 42% /media/41cd5baa-7a62-4706-b8e8-02c43ccee8d9
+```
+
+The new device that wasn't there last time is your SD card.
+
+The left column gives the device name of your SD card, and will look like or '/dev/sdb1'. The last part ('p1' or '1') is the partition number, but you want to use the whole SD card, so you need to remove that part from the name leaving something like '/dev/sdb' as the disk you want to read from.
+
+To backup your SD card:
+
+```
+sudo dd if=/dev/sdb of=~/SDCardBackup.img
+```
+
+The dd command does not show any feedback so you just need to wait until the command prompt re-appears.
+
+To restore the image, do exactly the same again to discover which device is your SD card.  As with the Mac, you need to unmount it first, but this time you need to use the partition number as well (the 'p1' or '1' after the device name).  If there is more than one partition on the device, you will need to repeat the umount command for all partition numbers.  For example, if the df -h shows that there are two partitions on the SD card, you will need to unmount both of them:
+
+```
+sudo umount /dev/sdb1
+sudo umount /dev/sdb2
+```
+
+Now you are able to write the original image to the SD drive:
+
+```
+sudo dd bs=4M if=~/SDCardBackup.img of=/dev/sdb
+```
+
+The bs=4M option sets the 'block size' on the SD card to 4Meg.  If you get any warnings, then change this to 1M instead, but that will take a little longer to write.
+
+Again, wait while it completes.  Before ejecting the SD card, make sure that your Linux PC has completed writing to it using the command:
+
+```
+sudo sync
+```
+
+## 6C) Other configurations on the image
+
+The provided images work in a way that data logging is started automatically about 3 minutes after the power has been turned on.
 
 As a standard, I configured HOT_Rover (password HOT_Rover) for the rover and HOT_Base (password HOT_Base) as wifi point. This can be changed.
 
