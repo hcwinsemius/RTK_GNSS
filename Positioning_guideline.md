@@ -1,18 +1,18 @@
-# Positioning Guidelines with the U-blox ZEDF9P receiver
-Written for Humanitarian OpenStreetMap Team Tanzania
+# Positioning Guidelines with the U-blox ZED-F9P GNSS Receiver
+Originally written by Andreas Krietemeyer for Humanitarian OpenStreetMap Team Tanzania
 
 ### Contributors:
 - Andreas Krietemeyer, andreas.krietemeyer@hotosm.org
-- Ivan Gayton ivangayton@gmail.com
+- Ivan Gayton, ivangayton@gmail.com
 - Hessel Winsemius
-- Iddy Chazua
+- Iddy Chazua, iddy.chazua@hotosm.org
 
 # 1) Software requirements
-- wine
-- rtklib 2.4.3
-- gfzrnx
-- u-center
-- Etcher
+- [wine](https://www.winehq.org/) (this document basically assumes you are working on Linux, though it's possible to use Windows or MacOS). 
+- [rtklib 2.4.3](http://www.rtklib.com/)
+- [gfzrnx](http://dataservices.gfz-potsdam.de/panmetaworks/showshort.php?id=escidoc:1577894)
+- [u-center](https://www.u-blox.com/en/product/u-center)
+- [Etcher](https://www.balena.io/etcher/)
 
 ## 1A) Wine installation
 Virtual environment to execute windows executables in Linux.
@@ -45,14 +45,15 @@ Download u-center: https://www.u-blox.com/de/product/u-center
 Yes, it is a windows executable but for that we use wine. Once you download the zip file, extract it. Then go with your command line to that folder and type
 wine u-center_v19.06.exe (Note that the version number may change.)
 After that, go through the installation process, BUT select a folder that is on your machine manually. Don't take the standard installation path that won't work.
-After installation, navigate again on the command line to where you installed the program and type
-wine u-center.exe
-This will start the u-center application.
+
+After installation, navigate again on the command line to where you installed the program and type ```wine u-center.exe```. This will start the u-center application.
 
 ## 1E) Etcher
-Etcher flashes saved images to an SD card. It is free, easy to use and validates after finishing. 
+Etcher flashes saved images to an SD card. It is free, easy to use and validates after finishing.
+
 To download go to [www.balena.io/etcher](www.balena.io/etcher).
-You only need this if you have to flash another SD card from the Rover / Base images that are provided.
+
+You will need this to flash SD cards from the Rover / Base images that are provided.
 
 ## 2) Raw UBX file operations
 The SD card in our Raspberry Pis stores the U-blox specific binary logging data from the connected receiver. It may consist of NMEA and UBX packages but also RTCM. The UBX data whereas is what we are interested in, because it contains the raw measurements from the receiver (code and phase of the tracked satellites) that can be used for post-processing.
@@ -443,7 +444,7 @@ They can also be downloaded here:
 
 [Base image](https://surfdrive.surf.nl/files/index.php/s/e7K4HJKvB0ymCdw)
 
-Password to access them is available upon request.
+Password to access them is available upon request (we'll move them to a location not requiring a password as soon as we get around to it).
 
 If one wishes to flash another empty SD card as a base or rover, one can use the provided images. For this I recommend the program Etcher. One only has to select an image and the SD card as target. It will create two new ‘partitions’ on the SD card (bootfs and rootfs).
 
@@ -593,4 +594,5 @@ It will restart the stream. Monitor if the stream is up again and if you are sat
 
 Now you can close the ssh session by just hitting the ‘x’ of the terminal window. It will give you a warning but that is okay for now. Check online if your stream is still there.
 
-[An explanatory video](https://www.youtube.com/watch?v=R0Hry5kR1jY):
+# 10) Other resources
+[This explanatory video](https://www.youtube.com/watch?v=R0Hry5kR1jY) provides a lot of information about how Real Time Kinematic (RTK) and differential correction work.
