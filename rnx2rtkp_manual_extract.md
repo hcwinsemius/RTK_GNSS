@@ -31,4 +31,35 @@ OPTIONS
 -h fix and hold for integer ambiguity resolution [off]
 -e output x/y/z-ecef position [latitude/longitude/height]
 -a output e/n/u-baseline [latitude/longitude/height]
+-n output NMEA-0183 GGA sentence [off]
+-g output latitude/longitude in the form of ddd mm ss.ss [ddd.ddd]
+-t output time in the form of yyyy/mm/dd hh:mm:ss.ss [sssss.ss]
+-u output time in utc [gpst]
+-d col number of decimals in time [3]
+-s sep field separator [' ']
+-r x y z reference (base) receiver ecef pos (m) [average of single pos]
+-l lat lon hgt reference (base) receiver latitude/longitude/height (deg/m)
+-y level output solution status (0:off,1:states,2:residuals) [0]
+-x level debug trace level (0:off) [0]
+```
+
+## EXAMPLES
+Example 1. Kinematic Positioning, L1+L2, output Latitude/Longitude/Height to STDOUT. 
+```
+rnx2rtkp 07590920.05o 30400920.05o 30400920.05n
+```
+
+Example 2. Single Point Positioning, El Mask=15deg, output NMEA GGA to file out.pos 
+```
+rnx2rtkp -p 0 -m 15 -n -o out.pos 07590920.05o 30400920.05n
+```
+
+Example 3. Static Positioning, L1, time form yyyy/mm/dd hh:mm:ss, output X/Y/Z‐ECEF positions 
+```
+rnx2rtkp -p 3 -f 1 -t -e 07590920.05o 30400920.05o 30400920.05n
+```
+
+Example 4. Kinematic Positioning, Instantaneous AR, validation threshold=2, comma separator 
+```
+rnx2rtkp -i -v 2 -s , 07590920.05o 30400920.05o 30400920.05n
 ```
