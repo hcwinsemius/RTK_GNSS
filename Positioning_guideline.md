@@ -375,10 +375,10 @@ In the field, a connection to the Raspberry Pi can be made using [Termux](https:
 - Power the Raspberry Pi and ArduSimple; the Pi should connect to your device's hotspot.
 - On the device, go to Settings -> Network & Internet -> Hotspot & tethering. You should see the connected device (probably with username pi).
 - Click on the device to see the IP address, which will be something like 192.168.32.xxx
-- Open Termux, and type ```ssh pi@192.168.43.xxx``` (obviously replacing the x's with the relevant digits).
+  - In some recent phones such as the Google Pixel 3, the Hotspot system doesn't allow you to see the IP address of the connected devices. To get them, open Termux and type ```ip neigh```, which should display the IP and MAC (hardware) address of all connected devices.
+- Open Termux, and type ```ssh pi@192.168.43.xxx``` (obviously replacing the x's with the relevant digits forming the IP address of the Raspberry Pi).
 
 You then have a very portable field setup to log into the server and investigate problems. 
-
 
 ### 4B2) For Post Processing
 
@@ -667,10 +667,10 @@ There are different methods to solve for the integer ambiguities in general (obt
 One example configuration:
 
 ```
-./rnx2rtkp -o output.pos -p 2 -m 5 -h -v 3.0 -y 2 -g -sys G -t -c rover.rnx base.rnx navigationdata.19n
+./rnx2rtkp -o output.pos  -p 3 -m 5 -h -y 2 -sys G -t -c -s , rover.rnx base.rnx rover.nav
 ```
 
-This will output the positions into output.pos. -p 2 means it is kinematic, -m 5 elevation cutoff at 5 degrees (we discard all data below 5 degrees), -h means fix-and-hold ambiguity resolution, -v 3.0 is the validation threshold for the ambiguities (should not be changed), -y 2 means to output the residuals, -g outputs lat/lon positions, -sys G means GPS-only satellites, -t sets the time format to yyy/mm/dd hh:mm:ss.ss, -c means a combined kalman filter is used (forward and backward).
+This will output the positions into output.pos. ```-p 2``` means would be kinematic, ```-e 3``` is static (rover is not moving, a single point only), ```-m 5``` elevation cutoff at 5 degrees (we discard all data below 5 degrees), ```-h``` means fix-and-hold ambiguity resolution, ```-y 2``` means to output the residuals, ```-sys G``` means GPS-only satellites (you would use ```-sys G,R,E,C``` to use all systems), ```-t``` sets the time format to yyy/mm/dd hh:mm:ss.ss, ```-c``` means a combined kalman filter is used (forward and backward).
 
 It requires however, that the base position is set in the base RINEX header. See section XXX. If it is not, we have to supply it separately e.g. in lat lon h with the option
 
