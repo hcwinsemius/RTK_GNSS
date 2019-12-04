@@ -1,6 +1,6 @@
 import os
 import shutil
-from utils import *
+from utils import convert_ubx
 from RoverPositionExporter import RoverPositionExporter
 
 
