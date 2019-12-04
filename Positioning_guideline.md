@@ -31,6 +31,22 @@ cd app/convbin/gcc
 make
 ```
 
+While you're at it, you may wish to install rnx2rtkp. As of this writing (December 2019) this requires an extra step to compile a dependency, iers.a. From within the RTKLIB folder:
+
+```
+cd lib/iers/gcc/
+make
+```
+
+If it demands gfortran, ```sudo apt install gfortran```
+
+Then go back to the main RTKLIB folder and:
+
+```
+cd app/rnx2rtkp/gcc
+make
+```
+
 ## 1C) GFZRNX installation
 Does RINEX (GPS Raw data) quality control and data editing / splitting / metadata ...
 
