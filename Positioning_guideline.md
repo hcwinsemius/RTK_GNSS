@@ -641,6 +641,8 @@ If that does not work:
 make
 ```
 
+The manual for RTKLIB is [here](http://www.rtklib.com/prog/manual_2.4.2.pdf) and the section on rnx2rtkp begins on page 93 at time of writing. For convenience, we've put a copy of the relevant section [here](rnx2rtkp_manual_extract.md)
+
 This process will take some minutes. It will create an executable which is a command line application. It takes RINEX observations (rover and base) and navigation data to compute rover positions.
 
 To download base station data, connect via ssh to the raspberry pi (base station) and locate the file(s) that you are interested in. The standard password for the user pi is raspberry.
