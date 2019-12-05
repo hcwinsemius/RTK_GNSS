@@ -1,0 +1,13 @@
+[Unit]
+Description=GNSS logging
+After=network.target
+
+[Service]
+ExecStart=/home/pi/startup.sh
+WorkingDirectory=/home/pi/
+StandardOutput=inherit
+StandardError=inherit
+User=pi
+
+[Install]
+WantedBy=multi-user.target
