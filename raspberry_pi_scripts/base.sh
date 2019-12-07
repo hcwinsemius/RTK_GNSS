@@ -2,27 +2,31 @@
 
 # Startup script for a Raspberry Pi Zero connected by USB or jumpercables
 # (UART) to a uBlox ZED-F9P GNSS receiver.
-# Checks for the presense of serial ports /dev/ttyS0 and /dev/ttyACM0.
+#
+# Checks for the presense of serial devices /dev/ttyS0 and /dev/ttyACM0.
 # If it finds them, checks for incoming data. If it finds incoming data
 # launches the str2str utility from RTKLIB to create a .ubx-format GNSS log.
 # Loops 10 times to check for the presence of serial devices and incoming data.
 # No verification of baud rate, or if the data is garbage, or anything other
-# than the presence of incoming bits.
+# than the presence of incoming bits from the specified devices.
+#
 # Sleeps 30 seconds between tries.
 
+# Make sure everything else on the PI is started before we begin
+sleep 60
 
-sleep 10
-# Put a blank line in the log
-echo >> ~/log.txt
+# Put a blank line in the log so it's easy to see where restart happened
+echo "" >> ~/log.txt
 
-# Log function makes it easier to write to the log with date/time prepended.
+# Make it easier to write to the log with date/time prepended.
 log () { 
     echo "$(date) $1" >> ~/log.txt 
 }
 
-log "Hi, starting base.sh"
+log "Starting base.sh"
 
-# Takes a device name (without "/dev/" prepended) as argument.
+# Takes a device name as sole argument.
+# "/dev/" is not prepended as str2str (used later) wants only the device string
 checkstream () {
     device=$1
     devicedata=
@@ -43,13 +47,13 @@ checkstream () {
 }
 
 # Expecting user to ssh into the Pi and use tail -f log.txt.
-echo >> ~/log.txt
 log "Started base.sh, sleeping 1 minute"
 sleep 60
 
 # Can't return values from Bash functions so here are global variables (sorry).
 device=
 devicedata=
+outfile=
 
 for i in {9..0}
 do
@@ -59,14 +63,18 @@ do
 	checkstream $device
 	if [ ! -z $devicedata ]
 	then
-	    ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file:///home/pi/base_log_%Y_%m_%d_%h_%M.ubx::S=24 &
+	    outfile="/home/pi/base_log_$(date "+%Y_%m_%d_%H_%M").ubx"
+	    ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://outfile::S=24 &
 	    exit 0
 	else
+	    log "$device is not present or is inaccessible"
 	fi
     done
     log "Sleeping for 30 seconds before trying again $i more times."
     sleep 30
 done
+
+log "Was not able to start a stream, giving up."
 
 exit 0
 
