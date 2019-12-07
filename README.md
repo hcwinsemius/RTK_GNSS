@@ -8,4 +8,4 @@ We currently have two different documents with instructions to get started (thes
 
 [A detailed (work-in-progress) guideline for developers](Positioning_guideline.md)
 
-
+![Surveyors enjoying higher precision than they are accustomed to](images/Surveyors.JPG)

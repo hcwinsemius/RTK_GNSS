@@ -3,7 +3,7 @@ Description=GNSS logging
 After=multi-user.target
 
 [Service]
-ExecStart=/home/pi/base.sh
+ExecStart=/home/pi/rover.sh
 WorkingDirectory=/home/pi/
 User=pi
 Restart=on-abort
