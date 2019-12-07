@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -e
 
 # Startup script for a Raspberry Pi Zero connected by USB or jumpercables
 # (UART) to a uBlox ZED-F9P GNSS receiver.
@@ -16,35 +17,14 @@
 sleep 60
 
 # Put a blank line in the log so it's easy to see where restart happened
-echo "" >> ~/log.txt
+echo ""
 
 # Make it easier to write to the log with date/time prepended.
 log () { 
-    echo "$(date) $1" >> ~/log.txt 
+    echo "$(date) $1"
 }
 
 log "Starting base.sh"
-
-# Takes a device name as sole argument.
-# "/dev/" is not prepended as str2str (used later) wants only the device string
-checkstream () {
-    device=$1
-    devicedata=
-    log "Checking for presence of $device"
-    if [ -c /dev/$device ]
-    then
-	log "$device present, checking for incoming data stream"
-	read devicedata < /dev/$device
-	if [ ! -z $devicedata ]
-	then
-	    log "Stream data coming through $device."
-	else
-	    log "$device is present but no data is coming from it"
-	fi
-    else
-	log "$device is not present or is inaccessible"
-    fi
-}
 
 # Expecting user to ssh into the Pi and use tail -f log.txt.
 log "Started base.sh, sleeping 1 minute"
@@ -54,21 +34,37 @@ sleep 60
 device=
 devicedata=
 outfile=
+success=
 
-for i in {9..0}
+for i in {4..0}
 do
-    for dev in "fakedevice" "ttyS0" "ttyACM0" #TODO remove fakedevice
+    for dev in "fakedevice" "ttyACM0" "ttyS0" #TODO remove fakedevice
     do
 	device=$dev
-	checkstream $device
-	if [ ! -z $devicedata ]
+	if [ -c $device ]
 	then
 	    outfile="/home/pi/base_log_$(date "+%Y_%m_%d_%H_%M").ubx"
+	    log "Attempting to launch log from $device"
 	    ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://$outfile::S=24 &
-	    exit 0
 	else
 	    log "$device is not present or is inaccessible"
 	fi
+	if [ -f "$outfile" ]
+	then
+	    log "$outfile created, checking to see if it's growing"
+	    oldfilesize=$(stat -c%s "$outfile")
+	    sleep 10
+	    newfilesize=$(stat -s%s "$outfile")
+	    log "Started at $oldfilesize and after 10 seconds $newfilesize"
+	    if [ $newfilesize -gt $oldfilesize ]
+	    then
+		log "$outfile is growing"
+		exit 0
+	    else
+		log "Nope, it is not growing, let us try again"
+		rm $outfile
+	    fi
+	fi    
     done
     log "Sleeping for 30 seconds before trying again $i more times."
     sleep 30

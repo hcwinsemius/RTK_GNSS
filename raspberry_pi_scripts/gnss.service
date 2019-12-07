@@ -3,11 +3,12 @@ Description=GNSS logging
 After=multi-user.target
 
 [Service]
-ExecStart=/home/pi/startup.sh
+ExecStart=/home/pi/base.sh
 WorkingDirectory=/home/pi/
-StandardOutput=inherit
-StandardError=inherit
 User=pi
+Restart=on-abort
+StandardOutput=file:/home/pi/log.txt
+StandardError=file:/home/pi/error.log
 
 [Install]
 WantedBy=multi-user.target
