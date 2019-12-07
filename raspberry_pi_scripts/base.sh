@@ -64,7 +64,7 @@ do
 	if [ ! -z $devicedata ]
 	then
 	    outfile="/home/pi/base_log_$(date "+%Y_%m_%d_%H_%M").ubx"
-	    ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://outfile::S=24 &
+	    ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://$outfile::S=24 &
 	    exit 0
 	else
 	    log "$device is not present or is inaccessible"
