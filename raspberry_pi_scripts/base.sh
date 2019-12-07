@@ -17,44 +17,52 @@ log () {
     echo "$(date) $1"
 }
 
+launch () {
+    device=$1
+    log "Trying with $device"
+    if [ -c "/dev/$device" ]
+    then
+	outfile="/home/pi/base_log_$(date "+%Y_%m_%d_%H_%M").ubx"
+	log "Attempting to launch log from $device"
+	~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://$outfile::S=24 &
+	sleep 2
+	if [ -f "$outfile" ]
+	then
+	    log "$outfile created from $device, checking if it's growing"
+	    oldfilesize=$(stat -c%s "$outfile")
+	    sleep 30
+	    newfilesize=$(stat -c%s "$outfile")
+	    log "Started at $oldfilesize, after 30 seconds $newfilesize"
+	    if [ $newfilesize -gt $oldfilesize ]
+	    then
+		log "$outfile is growing. Survey in progress."
+		success=true
+	    else
+		log "Nope, it is not growing, let us try again"
+		success=
+	    fi
+	fi
+    fi
+}
+
 log "Started base.sh, sleeping 2 minutes"
 sleep 60
 log "Still sleeping, 1 more minute"
 sleep 60
+success=
 
 while true
-do	
+do
     for dev in "ttyACM0" "ttyS0"
     do
-        device=$dev
-        if [ -c "/dev/$device" -a ! "$success" = true]
-        then
-            outfile="/home/pi/base_log_$(date "+%Y_%m_%d_%H_%M").ubx"
-            log "Attempting to launch log from $device"
-            ~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:115200:8:n:1:off -out file://$outfile::S=24 &
-	    sleep 2
-            if [ -f "$outfile" ]
-            then
-                log "$outfile created from $device, checking if it's growing"
-                oldfilesize=$(stat -c%s "$outfile")
-                sleep 30
-                newfilesize=$(stat -c%s "$outfile")
-                log "Started at $oldfilesize and after 30 seconds $newfilesize"
-                if [ $newfilesize -gt $oldfilesize ]
-                then
-		    log "$outfile is growing. Survey in progress."
-		    success=true
-		    break
-		else
-		    log "Nope, it is not growing, let us try again"
-		    success=
-                fi
-            fi
-        else
-	    log "$device is not present or is inaccessible"
+	if [ ! "$success" = true ]
+	then
+	    launch "$dev"
 	fi
-    fi
-	log "Sleeping for 30 seconds before trying again."
-	sleep 30
     done
+    sleep 5
 done
+
+
+		 
+	
