@@ -1,15 +1,18 @@
 import os
 import subprocess
 
-
-def convert_ubx(ubx_dir, input_files, marker_names, ho, hr, ha, country_code, convbin_path, gfzrnx_path):
+def convert_ubx(ubx_dir, input_files, marker_names, ho, hr, ha, \
+                country_code, convbin_path, gfzrnx_path):
     options = '-os -od -v 3 -f 5 -ho "{}" -hr "{}" -ha "{}"'.format(ho, hr, ha)
 
     for i, f in enumerate(input_files):
         current_marker = marker_names[i]
-        command_convbin = '{} {} -hm "{}" {}{}'.format(convbin_path, options, current_marker, ubx_dir, f)
+        command_convbin = '{} {} -hm "{}" {}{}'\
+                          .format(convbin_path, options, \
+                                  current_marker, ubx_dir, f)
         if f.endswith('.ubx'):
-            proc = subprocess.Popen('{}'.format(command_convbin), shell=True, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen('{}'.format(command_convbin), \
+                                    shell=True, stderr=subprocess.STDOUT)
             proc.wait()
 
             new_file = f'{ubx_dir}{f[0:-4]}.obs'
@@ -17,7 +20,11 @@ def convert_ubx(ubx_dir, input_files, marker_names, ho, hr, ha, country_code, co
             proc = subprocess.Popen('{}'.format(command_gfzrnx), shell=True, stderr=subprocess.STDOUT)
             proc.wait()
 
-            os.remove(new_file)
+            try:
+                os.remove(new_file)
+            except Exception as e:
+                print('Problem while attempting to remove {}'.format(new_file))
+                print(e)
 
 
 
