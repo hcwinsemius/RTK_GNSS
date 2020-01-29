@@ -1,30 +1,64 @@
-#! /bin/sh
-now=$(date)
-echo $now" Started rover.sh, sleeping 3 minutes" >> /home/pi/test.log
-sleep 60
-echo "Sleeping 2 minutes" >> /home/pi/test.log
-sleep 60
-echo "Sleeping 1 minute" >> /home/pi/test.log
-sleep 60
+#!/bin/bash
+#set -e
 
-# Echo "Attempting to receive RTCM information from the NTRIP caster" >> /home/pi/test.log
-#sudo /home/pi/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in ntrip://rtk2go.com:2101/YPEN001 -out serial://ttyACM0:38400 &
+# Startup script for a Raspberry Pi Zero connected by USB or jumpercables
+# (UART) to a uBlox ZED-F9P GNSS receiver.
+#
+# Intended to be run as a service from systemd.
+# gnss.service file included in code repo.
+#
+# Checks for the presense of serial devices /dev/ttyS0 and /dev/ttyACM0.
+# If it finds them, launches str2str utility from RTKLIB to create .ubx log.
+# Checks if that log is growing. If not, retries forever.
 
-now=$(date)
-echo $now" Checking for the GPS receiver on port /dev/ttyS0" >> /home/pi/test.log
-if [ -c /dev/ttyS0 ] 
+# Make it easier to write to the log with date/time prepended.
+# Expecting user to ssh into the Pi and use tail -f log.txt.
+log () { 
+    echo "$(date) $1"
+}
+
+launch () {
+    device=$1
+    log "Trying with $device"
+    if [ -c "/dev/$device" ]
     then
-	echo "S0 present">>/home/pi/test.log
-        /home/pi/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://ttyS0:460800:8:n:1:off -out file:///home/pi/rover_log_%Y_%m_%d_%h_%M.ubx::S=24 &
-    else
-        echo $now" Checking for the GPS receiver on port /dev/ttyACM0 (jumper cables)" >> /home/pi/test.log
-        if [ -c /dev/ttyACM0 ]
-            then
-                echo "ACM0 present, beginning log" >> /home/pi/test.log
-                /home/pi/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://ttyACM0:460800:8:n:1:off -out file:///home/pi/rover_log_%Y_%m_%d_%h_%M.ubx::S=24 &
-            else
-                echo "ACM0 not present" >> /home/pi/test.log
+	outfile="/home/pi/rover_log_$(date "+%Y_%m_%d_%H_%M").ubx"
+	log "Attempting to launch log from $device"
+	~/RTKLIB-rtklib_2.4.3/app/str2str/gcc/str2str -in serial://$device:460800:8:n:1:off -out file://$outfile::S=24 &
+	sleep 2
+	if [ -f "$outfile" ]
+	then
+	    log "$outfile created from $device, checking if it's growing"
+	    oldfilesize=$(stat -c%s "$outfile")
+	    sleep 30
+	    newfilesize=$(stat -c%s "$outfile")
+	    log "Started at $oldfilesize, after 30 seconds $newfilesize"
+	    if [ $newfilesize -gt $oldfilesize ]
+	    then
+		log "$outfile is growing. Survey in progress."
+		success=true
+	    else
+		log "Nope, it is not growing, let us try again"
+		success=
+	    fi
 	fi
-fi
+    fi
+}
 
-exit 0
+log "Started rover.sh, sleeping 2 minutes"
+sleep 60
+log "Still sleeping, 1 more minute"
+sleep 60
+success=
+
+while true
+do
+    for dev in "ttyACM0" "ttyS0"
+    do
+	if [ ! "$success" = true ]
+	then
+	    launch "$dev"
+	fi
+    done
+    sleep 5
+done

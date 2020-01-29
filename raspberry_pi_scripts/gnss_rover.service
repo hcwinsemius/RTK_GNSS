@@ -1,0 +1,14 @@
+[Unit]
+Description=GNSS logging
+After=multi-user.target
+
+[Service]
+ExecStart=/home/pi/rover.sh
+WorkingDirectory=/home/pi/
+User=pi
+Restart=on-abort
+StandardOutput=file:/home/pi/log.txt
+StandardError=file:/home/pi/error.log
+
+[Install]
+WantedBy=multi-user.target

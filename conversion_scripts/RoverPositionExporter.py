@@ -1,4 +1,4 @@
-from utils import *
+from utils import convert_ubx
 import struct
 import datetime
 import numpy as np
