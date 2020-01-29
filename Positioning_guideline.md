@@ -709,7 +709,7 @@ Extract the file and keep the location in mind or copy it to a destination that 
 
 Once you are in the RTKPOST GUI, enter the file path of your rover in the first box (RINEX OBS: Rover). Below, anter the file path of your base (RINEX OBS: Base Station). Below that, enter the file path of the MGEX brdm file that you just downloaded. The other boxes below it can stay empty. At the very last box on the bottom, enter the output file location.
 
-Now, for the 'specific' configuration, download the example configuration from [here](http://github.com/hcwinsemius/RTK_GNSS/example_configuration/rtkpost.conf). Once you downloaded the example configuration, click on 'Options...', click on 'Load...' and select the .conf that you just downloaded. On this page, you should see that GPS, GO, Galileo and BeiDou should be activated and the frequencies L1+L2 are selected, as well as the Positioning Mode Kinematic. If you know that your rover position is static from start until finish, you could also select 'Static' as the positioning mode here. Click on Ok and you could execute the processing.
+Now, for the 'specific' configuration, download the example configuration from [here](example_configuration/rtkpost.conf). Once you downloaded the example configuration, click on 'Options...', click on 'Load...' and select the .conf that you just downloaded. On this page, you should see that GPS, GO, Galileo and BeiDou should be activated and the frequencies L1+L2 are selected, as well as the Positioning Mode Kinematic. If you know that your rover position is static from start until finish, you could also select 'Static' as the positioning mode here. Click on Ok and you could execute the processing.
 
 It should create a .pos file at the specified directory.
 
