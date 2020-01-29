@@ -7,6 +7,20 @@ Originally written by Andreas Krietemeyer for Humanitarian OpenStreetMap Team Ta
 - Hessel Winsemius
 - Iddy Chazua, iddy.chazua@hotosm.org
 
+# 0) Preface
+This document was intentionally set up to log raw (UBX) data with U-blox ZED-F9P receivers and enable the RTK positioning capabilities at the same time. The main part focuses on the configuration of the base station (section 4) and the rover (section 5). The data logging of the raw data (code and phase data) and streaming of RTCM3 messages is generally realized with Raspberry Pi Zeros. Section 5A2 describes the possibility to only use an android smartphone and a receiver, configured as a rover, connected to it to obtain RTK positions. Some practical hints are provided to obtain an RTK solution as well as many troubleshooting tips.
+
+# Contents
+1) Software requirements
+2) Raw UBX file operations
+3) Precise Point Positioning (PPP)
+4) Base station
+5) Rover
+6) Raspberry Pi configuration
+7) More practical information
+8) Post-Processing in RTKLIB
+9) Troubleshooting Raspberry Pi logging
+
 # 1) Software requirements
 - [wine](https://www.winehq.org/) (this document basically assumes you are working on Linux, though it's possible to use Windows or MacOS). 
 - [rtklib 2.4.3](http://www.rtklib.com/)
@@ -461,7 +475,29 @@ Also, we have to do some configuration in u-center.
 
 You can now connect with your phone to the rover. Make sure that you select the correct baud rate in PPM/GNSS commander and that you mock your GPS location with the new GNSS position.
 
-### 5A2) Post-Processing
+### 5A2) RTK with Android and a receiver attached to it
+Requirements:
+- 1 Ardusimple ZED-F9P board + antenna
+- Android phone
+- This app [SW Maps](https://play.google.com/store/apps/details?id=np.com.softwel.swmaps)
+- one male-to-male jumper cable
+- 1 micro USB cable
+- 1 USB OTG cable
+- (optional) adapter from micro-USB to e.g. USB-C if necessary
+
+I recently discoved a free Andoid app from a Nepalese company that appears to be working very well for a simple-to-use rover application. The idea is to connect a USB cable from the ZED-F9 board to the smartphone and let the app send RTCM messages from the internet (via NTRIP protocol) to the device. The device then returns NMEA strings (actual position) which are interpreted by the app and the position is displayed on the map. It's possible to record single points and trajects with the app but I imagine that's not all that is possible with this app, since it is in principle a mobile GIS. Take a look for yourself [here](https://play.google.com/store/apps/details?id=np.com.softwel.swmaps).
+
+Installing the application is the first step. The second is to prepare your receiver to work correctly. First, one needs a basic rover configuration (make sure that TMODE3 is disabled and that the desired NMEA messages are enabled. These are typically enabled by default.). After that, since we want to use the second USB port on our Ardusimple board, we have to configure UART2 to accept RTCM3 messages and output NMEA:
+- Go to UBX-CFG-PRT and select as target UART2. Make sure that protocol in is set to 5 - RTCM3 and protocol out is set as 1 - NMEA. Set the baud rate to the standard baudrate of 115200. If not, select these and click on send in the bottom left of the window.    
+- Go to UBX-CFG-CFG (Configuration)
+  - Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
+
+Now,disconnect your Ardusimple board from the power source and grab the male-to-male jumper cable. You have to bridge TX and RX on UART2 (which are the second and third pin on the left side of the black female rails). It is written next to it TX and RX. Once that is done, you can connect the second USB port (written as Power+Xbee) to your smartphone. It should power the device and will start up.
+Start the app, click on the symbol in the top left and go to USB Serial GPS. Select the device that should pop up on the right side. Select the previously specified baud rate (115200). Now, that's the important step, shose as an instrument model <b>u-blox RTK</b> and NOT <b>u-blox</b>. Only if you select the RTK version, the NTRIP streaming is possible. Click on connect and if your antenna has enough satellites in view, you should already see your 'normal' position. Click on the symbol in the top left again and below Skyplot one should see a new entry 'NTRIP Connection'. Select this one and enter the address and mountpoint details of the NTRIP Caster you wish to use (e.g. rtk2go.com). Do not tick the box to send the GGA string to the caster unless you are using a professional service that allows this option. Click on connect and you should see that data is transmitted. You can check your position under the point GPS Status. There it will display you if a fixed solution is obtained, but also the coloring of the observed points will change if e.g. only a float solution is obtained.
+
+The very first look and the short test I did with it appeared very good. Give it a shot yourself and try it out. With this solution, the 'nasty' Raspberry and bash scripts are not required anymore if one is only interested in a RTK solution provided by the receiver.
+
+### 5A3) Post-Processing
 
 For post-processing we only need the raw data from the UBX-RAWX messages. The data should be logged via USB. To enable the raw data logging:
 - Go to View-Messages view. Click on UBX-CFG-MSG (Messages).
@@ -621,9 +657,66 @@ Is activated automatically in the Rover SD cards / images that are provided. It 
 - Base station antennas are sensitive to multipath and shadowing. Suggestion is to mount antennas at least 2-4 meters above surrounding obstacles with a metal pole and fix the pole with wire ropes. This will increase the usability of the base station. Of course the PPP must be done after the base station is placed in this way.
 
 # 8) Post-Processing in RTKLIB
-This requires to compile the rnx2rtkp application in RTKLIB. Again, for this RTKLIB 2.4.3 is required (the same version used for convbin).
+For this task, I prefer to use not the 'original' RTKLIB version, but one that is forked from the original one which is more targeted towards low-cost receiver processing: [rtklibexplorer](https://github.com/rtklibexplorer/RTKLIB). Compilation of the code is exactly the same as for the 'normal' RTKLIB version. There are however, also Windows binaries available from the [website](https://rtkexplorer.com/downloads/rtklib-code/) of the developer.
 
-Navigate in the command line to the RTKLIB folder and:
+Since the GUI is much more comfortable to work with, I prefer to use wine again and the precompiled windows version of the developer. However, a short description, how to compile the source code is given further below. So download the latest windows version from the developer's website, extract the files and navigate to the folder via command line. Now start the program via wine:
+
+```
+wine rtkpost.exe
+```
+
+And a GUI should open up. A lot of explanations could be given here. However, you will only find an example application here.
+
+The manual for RTKLIB is [here](http://www.rtklib.com/prog/manual_2.4.2.pdf) and the section on rnx2rtkp begins on page 93 at time of writing. For convenience, we've put a copy of the relevant section [here](rnx2rtkp_manual_extract.md)
+
+Requirements for post-processing:
+- raw data (Code and Phase data) of base and rover in RINEX format
+- MGEX broadcast navigation data
+- some some configuration
+
+All requirements will be discussed below.
+
+## Raw data of base and rover
+
+One needs the raw data of both, the base and rover. The data is in the RINEX format and preferably split into daily files. However, if the recorded data of base and rover are not too long, this might not be necessary. However, both datasets (obviously) have to cover the same time period that is desired from the rover dataset.
+
+This section gives a quick description on how to convert the logged .ubx files of base and rover to RINEX files. It does not cover how to convert it to daily files.
+
+For the conversion we use the command line tool convbin. Section 1B) covers the installation procedure. Navigate to the convbin folder, set an alias or put a link for it into your bin folder. For one ubx file that you want to convert, use the following command line code:
+
+```
+convbin -os -od -f 5 -v 3.03 YOUR_UBX_FILE_PATH
+```
+
+This will convert the logged data one-to-one into RINEX. No splicing, no trimming or splitting is performed. It will output you a .obs file. For further processing, the supplied python scripts can be used, or manually with [gfzrnx](http://semisys.gfz-potsdam.de/semisys/scripts/download/index.php).
+
+
+## MGEX broadcast navigation data
+
+The navigation data can be A) logged by the U-blox chip directly (if the message SFRBX is enabled) from the observed satellites or B) just downloaded from the internet. The broadcasted information is the same whether it is downloaded or directly logged by the chip. You only need to know which day of the year (DOY) you recorded your data. You can check that e.g. [here](https://www.esrl.noaa.gov/gmd/grad/neubrew/Calendar.jsp).
+
+Once you know your year (which should not impose a big problem I hope :) and DOY, you can go to NASA's archive of Space Geodesy data (CDDIS) and download the MGEX file from here:
+
+```
+ftp://cddis.nasa.gov/gnss/data/campaign/mgex/daily/rinex3/
+```
+
+Navigate to the year and DOY. Then there are several folders which the two-digit year number (e.g. 19) and one letter behind. For year 2019 DOY 205 e.g. select 19p and download the brdm2050.19p.Z file. The full link looks like this: ftp://cddis.nasa.gov/gnss/data/campaign/mgex/daily/rinex3/2019/205/19p/brdm2050.19p.Z
+
+Extract the file and keep the location in mind or copy it to a destination that you prefer.
+
+## Example Configuration
+
+Once you are in the RTKPOST GUI, enter the file path of your rover in the first box (RINEX OBS: Rover). Below, anter the file path of your base (RINEX OBS: Base Station). Below that, enter the file path of the MGEX brdm file that you just downloaded. The other boxes below it can stay empty. At the very last box on the bottom, enter the output file location.
+
+Now, for the 'specific' configuration, download the example configuration from [here](http://github.com/hcwinsemius/RTK_GNSS/example_configuration/rtkpost.conf). Once you downloaded the example configuration, click on 'Options...', click on 'Load...' and select the .conf that you just downloaded. On this page, you should see that GPS, GO, Galileo and BeiDou should be activated and the frequencies L1+L2 are selected, as well as the Positioning Mode Kinematic. If you know that your rover position is static from start until finish, you could also select 'Static' as the positioning mode here. Click on Ok and you could execute the processing.
+
+It should create a .pos file at the specified directory.
+
+
+
+## (Optional) Compilation of source code
+The equivalent to the rtkpost.exe GUI is the rnx2rtkp application (which is a command-line interface). To compile the rnx2rtkp applicatio, navigate in the command line to the RTKLIB folder and:
 
 ```
 cd app/rnx2rtkp/gcc
@@ -641,9 +734,9 @@ If that does not work:
 make
 ```
 
-The manual for RTKLIB is [here](http://www.rtklib.com/prog/manual_2.4.2.pdf) and the section on rnx2rtkp begins on page 93 at time of writing. For convenience, we've put a copy of the relevant section [here](rnx2rtkp_manual_extract.md)
-
 This process will take some minutes. It will create an executable which is a command line application. It takes RINEX observations (rover and base) and navigation data to compute rover positions.
+
+## (Optional) Instructions TZN-specific
 
 To download base station data, connect via ssh to the raspberry pi (base station) and locate the file(s) that you are interested in. The standard password for the user pi is raspberry.
 
@@ -657,10 +750,9 @@ scp pi@192.168.100.247:/home/pi/FILENAME.ubx /home/hot-admin/Documents/RTK/Data/
 
 Convert the base station data and rover data with the [python script](conversion_scripts/main.py). Add the base station position to the RINEX base data (see section 2C). Make sure that navigation data (under ../nav/) has been created by the rover.
 
-The configuration itself is done via command line arguments and requires some insight to the application. In principle for a base-rover setup there are two positioning modes that we can choose from: a kinematic solution (if the rover is moving) and a static solution (if the rover is not moving). Beware that if you select a static solution, the full RINEX rover observation data must be from the same point, so it may not move. The only difference between both solution modes is that the estimated rover position will be tightly constrained in the static solution but loose in the kinematic solution.
+## (Optional) Command-line rnx2rtkp options
 
-Navigation data is required too. This can be either obtained from the converted .ubx files (if the package SFRBX is enabled or downloaded from the internet.
-For a first try it is always good to user GPS-only satellites because it is the most stable processing in RTKLIB. Furthermore, the ambiguity resolution for e.g. GLONASS and BeiDou is rather complicated and not straight forward (depends if the same receiver is used etc.).
+The configuration itself is done via command line arguments and requires some insight to the application. In principle for a base-rover setup there are two positioning modes that we can choose from: a kinematic solution (if the rover is moving) and a static solution (if the rover is not moving). Beware that if you select a static solution, the full RINEX rover observation data must be from the same point, so it may not move. The only difference between both solution modes is that the estimated rover position will be tightly constrained in the static solution but loose in the kinematic solution.
 
 There are different methods to solve for the integer ambiguities in general (obtaining a ‘fixed’ solution). For a static solution, I definitely recommend the fix-and-hold integer ambiguity resolution, though the results on a kinematic solution may be acceptable too. There are more options, but the second option that one could try is the continuous ambiguity resolution. The performance is typically measured with the amount of fixed solutions in the data. Personally, the fix-and-hold solution performed best for my cases.
 
@@ -670,7 +762,7 @@ One example configuration:
 ./rnx2rtkp -o output.pos  -p 3 -m 5 -h -y 2 -sys G -t -c -s , rover.rnx base.rnx rover.nav
 ```
 
-This will output the positions into output.pos. ```-p 2``` means would be kinematic, ```-e 3``` is static (rover is not moving, a single point only), ```-m 5``` elevation cutoff at 5 degrees (we discard all data below 5 degrees), ```-h``` means fix-and-hold ambiguity resolution, ```-y 2``` means to output the residuals, ```-sys G``` means GPS-only satellites (you would use ```-sys G,R,E,C``` to use all systems), ```-t``` sets the time format to yyy/mm/dd hh:mm:ss.ss, ```-c``` means a combined kalman filter is used (forward and backward).
+This will output the positions into output.pos. ```-p 2``` means would be kinematic, ```-p 3``` is static (rover is not moving, a single point only), ```-m 5``` elevation cutoff at 5 degrees (we discard all data below 5 degrees), ```-h``` means fix-and-hold ambiguity resolution, ```-y 2``` means to output the residuals, ```-sys G``` means GPS-only satellites (you would use ```-sys G,R,E,C``` to use all systems), ```-t``` sets the time format to yyy/mm/dd hh:mm:ss.ss, ```-c``` means a combined kalman filter is used (forward and backward).
 
 It requires however, that the base position is set in the base RINEX header. See section XXX. If it is not, we have to supply it separately e.g. in lat lon h with the option
 
