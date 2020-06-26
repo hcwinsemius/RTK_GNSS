@@ -98,7 +98,7 @@ If we have *.ubx logging files with the message UBX-RAWX in it:
 
 We have to convert them to a standard file that is used in GPS Processing. This is the RINEX format.
 
-To convert these, I have prepared a [small python function](https://github.com/ivangayton/RTK_GNSS/tree/master/conversion_scripts) that splits, converts and adds metadata.
+To convert these, I have prepared a [small python function](https://github.com/hcwinsemius/RTK_GNSS/tree/master/conversion_scripts) that splits, converts and adds metadata.
 
 For this we need the following programs:
 - working python3.6+ environment
