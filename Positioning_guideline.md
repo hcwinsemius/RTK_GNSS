@@ -22,37 +22,46 @@ This document was intentionally set up to log raw (UBX) data with U-blox ZED-F9P
 9) Troubleshooting Raspberry Pi logging
 
 # 1) Software requirements
-- [wine](https://www.winehq.org/) (this document basically assumes you are working on Linux, though it's possible to use Windows or MacOS). 
+- [wine](https://www.winehq.org/) (this document basically assumes you are working on Linux, though it's possible to use Windows or MacOS).
 - [rtklib 2.4.3](http://www.rtklib.com/)
 - [gfzrnx](http://dataservices.gfz-potsdam.de/panmetaworks/showshort.php?id=escidoc:1577894)
 - [u-center](https://www.u-blox.com/en/product/u-center)
 - [Etcher](https://www.balena.io/etcher/)
 
 ## 1A) Wine installation
-Virtual environment to execute windows executables in Linux.
+
+Virtual environment to execute Windows executables in Linux:
+
+```shell
 sudo apt-get install wine-stable
+```
 
 https://tecadmin.net/install-wine-on-ubuntu/
 
 ## 1B) RTKLIB (convbin) installation
+
 Convbin is converting the raw U-blox binary (.ubx) data from the receiver to RINEX
 
-
-```git clone https://github.com/tomojitakasu/RTKLIB.git
+```shell
+git clone https://github.com/tomojitakasu/RTKLIB.git
 cd RTKLIB
 git checkout rtklib_2.4.3
 cd app/convbin/gcc
 make
 ```
 
-While you're at it, you may wish to install rnx2rtkp. As of this writing (December 2019) this requires an extra step to compile a dependency, iers.a. From within the RTKLIB folder:
+While you're at it, you may wish to install `rnx2rtkp`. As of this writing (December 2019) this requires an extra step to compile a dependency, `iers.a`. From within the RTKLIB folder:
 
 ```
 cd lib/iers/gcc/
 make
 ```
 
-If it demands gfortran, ```sudo apt install gfortran```
+If it demands gfortran:
+
+```shell
+sudo apt install gfortran
+```
 
 Then go back to the main RTKLIB folder and:
 
@@ -74,7 +83,7 @@ That’s it. It’s a binary executable that we need later.
 
 Download [u-Blox u-center](https://www.u-blox.com/de/product/u-center). When you get to this page, scroll down a bit until you see the button for "Documentation & resources". There you'll find a section called "Evaluation software" where you can download a zip file.
 
-Yes, it is a windows executable, but we assume you installed wine. Once you download the zip file, extract it. Then go with your command line to that folder and type ```wine u-center_vXX.xx.exe``` (whatever the latest version number is). Taht will launch a Windows installer.
+Yes, it is a windows executable, but we assume you installed wine. Once you download the zip file, extract it. Then go with your command line to that folder and type ```wine u-center_vXX.xx.exe``` (whatever the latest version number is). That will launch a Windows installer.
 
 Go through the installation process, but _don't accept the standard installation path_; that probably won't work (and will be a hassle to find anyway). Put it somewhere on your hard drive that you can remember and easily find.
 
@@ -149,7 +158,9 @@ O - HOT1:
 
 To add the approximate XYZ position to the RINEX file, use this:
 
-```./gfzrnx_lx -finp YOUR_RINEX_FILE -fout DESTINATION_FOLDER/::RX3:: -kv -crux crux.conf -f```
+```shell
+./gfzrnx_lx -finp YOUR_RINEX_FILE -fout DESTINATION_FOLDER/::RX3:: -kv -crux crux.conf -f
+```
 
 In case you don't have the cartesian coordinates of the point you're trying to use for the crux.conf file, [this NRCAN tool](https://webapp.geod.nrcan.gc.ca/geod/tools-outils/trx.php?locale=en) can do the conversion.
 
@@ -194,7 +205,9 @@ Type the X Y Z or Lon Lat H in the specified columns. Note that you have to sepa
 
 e.g. a full example looks like this:
 
-```sala 11.9264 57.3958 0.0000```
+```
+sala 11.9264 57.3958 0.0000
+```
 
 ![screeshot of holt.oso.chalmers.se website](images/ocean.png)
 
@@ -257,7 +270,7 @@ The board should power on now.
 
 Start u-center via wine in the folder where you installed u-center before (see installation instructions on how to install u-center).
 
-The command ```wine u-center.exe``` will start the program.
+The command `wine u-center.exe` will start the program.
 
 Wait until the U-blox logo vanished and connect to the device (typically on COM Port 33) with the button at the third line in the top left (looks like a disconnected plug) and press on the small arrow next to it.
 
@@ -382,11 +395,11 @@ Make sure that the Mountpoint (at rtk2go) is set up correctly at http://69.75.31
 
 Be aware that new Mountpoints have to be registered. The registration is simple and can be done [here](http://www.rtk2go.com/new-reservation/)
 
-To make extra sure that raw data is logged, connect to the base station raspberry pi via ssh (if you are in the same wifi network that can be done via ```ssh pi@raspberrypi.local``` and check if the base_XXX.ubx file size is increasing over time. If it's zero or stays the same, something wet wrong. It is probably the wiring. Be aware that the startup may take several minutes.
+To make extra sure that raw data is logged, connect to the base station raspberry pi via SSH (if you are in the same wifi network that can be done via `ssh pi@raspberrypi.local` and check if the `base_XXX.ubx` file size is increasing over time. If it's zero or stays the same, something wet wrong. It is probably the wiring. Be aware that the startup may take several minutes.
 
 In the field, a connection to the Raspberry Pi can be made using [Termux](https://termux.com/) which is available [here](https://play.google.com/store/apps/details?id=com.termux) on the Android Play Store.
 - Install Termux on your Android device
-- Within Termux install OpenSSH by typing ```pkg install openssh```
+- Within Termux install OpenSSH by typing `pkg install openssh`
   - On some devices this doesn't work and it suggests to install Dropbear instead; this is fine.
 - Turn on your device's Wifi Hotspot
   - The hotspot needs to match the wireless network SSID and password configured on the Raspberry Pi, in our case usually HOT_Rover for both.
@@ -394,9 +407,9 @@ In the field, a connection to the Raspberry Pi can be made using [Termux](https:
 - On the device, go to Settings -> Network & Internet -> Hotspot & tethering. You should see the connected device (probably with username pi).
 - Click on the device to see the IP address, which will be something like 192.168.32.xxx
   - In some recent phones such as the Google Pixel 3, the Hotspot system doesn't allow you to see the IP address of the connected devices. To get them, open Termux and type ```ip neigh```, which should display the IP and MAC (hardware) address of all connected devices.
-- Open Termux, and type ```ssh pi@192.168.43.xxx``` (obviously replacing the x's with the relevant digits forming the IP address of the Raspberry Pi).
+- Open Termux, and type `ssh pi@192.168.43.xxx` (obviously replacing the x's with the relevant digits forming the IP address of the Raspberry Pi).
 
-You then have a very portable field setup to log into the server and investigate problems. 
+You then have a very portable field setup to log into the server and investigate problems.
 
 ### 4B2) For Post Processing
 
@@ -423,7 +436,7 @@ If RTK is used, we have to configure the receiver to take incoming RTCM messages
   - 01-07 NAV-PVT
   - 01-03 NAV-STATUS
   - 02-15 RXM-RAWX
-  - 02-13 RXM-SFRBX 
+  - 02-13 RXM-SFRBX
 - If that receiver was configured as a base station before:
   - Make sure to disable the TMODE3 setting under UBX-CFG-TMODE3.
   - Disable the RTCM messages 1005, 1074, 1084, 1094, 1124 and 1230 under UBX-CFG-MSG.
@@ -439,7 +452,7 @@ If RTK is used, we have to configure the receiver to take incoming RTCM messages
 
 _Update 11.10.2019:_ Another work around is to use jumper cables. For that we require 3 steps: hardware, ardusimple configuration and startup script modifications. For the hardware step: headers have to be soldered on the ardusimple board. 5 Female-to-Female jumper cables are connected in the same way as for the base station. Connect them like this:
 -	5V - 5V_IN
--	5V - IOREF  
+-	5V - IOREF
 -	GROUND - GND
 -	TX - RX
 -	RX - TX
@@ -492,7 +505,7 @@ Requirements:
 I recently discoved a free Andoid app from a Nepalese company that appears to be working very well for a simple-to-use rover application. The idea is to connect a USB cable from the ZED-F9 board to the smartphone and let the app send RTCM messages from the internet (via NTRIP protocol) to the device. The device then returns NMEA strings (actual position) which are interpreted by the app and the position is displayed on the map. It's possible to record single points and trajects with the app but I imagine that's not all that is possible with this app, since it is in principle a mobile GIS. Take a look for yourself [here](https://play.google.com/store/apps/details?id=np.com.softwel.swmaps).
 
 Installing the application is the first step. The second is to prepare your receiver to work correctly. First, one needs a basic rover configuration (make sure that TMODE3 is disabled and that the desired NMEA messages are enabled. These are typically enabled by default.). After that, since we want to use the second USB port on our Ardusimple board, we have to configure UART2 to accept RTCM3 messages and output NMEA:
-- Go to UBX-CFG-PRT and select as target UART2. Make sure that protocol in is set to 5 - RTCM3 and protocol out is set as 1 - NMEA. Set the baud rate to the standard baudrate of 115200. If not, select these and click on send in the bottom left of the window.    
+- Go to UBX-CFG-PRT and select as target UART2. Make sure that protocol in is set to 5 - RTCM3 and protocol out is set as 1 - NMEA. Set the baud rate to the standard baudrate of 115200. If not, select these and click on send in the bottom left of the window.
 - Go to UBX-CFG-CFG (Configuration)
   - Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
 
@@ -507,7 +520,7 @@ For post-processing we only need the raw data from the UBX-RAWX messages. The da
 - Go to View-Messages view. Click on UBX-CFG-MSG (Messages).
   - Select 02-15 RXM-RAWX and enable it on USB. Click on send.
   - Then go to the message 02-13 RXM-SFRBX and enable it on USB. Click on send.
-- Go to UBX-CFG-PRT and select as target USB. Make sure that both, protocol in and protocol out are set as 0+1+5 – UBX+NMEA+RTCM3. If not, select these and click on send in the bottom left of the window.    
+- Go to UBX-CFG-PRT and select as target USB. Make sure that both, protocol in and protocol out are set as 0+1+5 – UBX+NMEA+RTCM3. If not, select these and click on send in the bottom left of the window.
 - Go to UBX-CFG-CFG (Configuration)
   - Select all 4 devices on the right (BBR, FLASH, I2C-EEPROM, SPI-FLASH) and click on send.
 
@@ -539,7 +552,7 @@ The Reference Carrier Range Status indicates the positioning status (0->Stand-al
 # 6) Raspberry Pi configuration
 
 ## 6A) Using Balena Etcher
-I provide two images (.img files) that contain already pre-compiled and pre-configured programs. These images can be flashed onto an SD card of 16GB or larger. If the SD card is too small (some supposedly 16GB SD cards are actually just a bit smaller) the image file can be shrunk [like so](https://softwarebakery.com//shrinking-images-on-linux). 
+I provide two images (.img files) that contain already pre-compiled and pre-configured programs. These images can be flashed onto an SD card of 16GB or larger. If the SD card is too small (some supposedly 16GB SD cards are actually just a bit smaller) the image file can be shrunk [like so](https://softwarebakery.com//shrinking-images-on-linux).
 
 They can also be downloaded here:
 
@@ -571,7 +584,7 @@ tmpfs 176860 0 176860 0% /run/shm
 /dev/mmcblk0p1 57288 14752 42536 26% /boot
 ```
 
-Insert the SD card into the reader and type ```df -h``` again:
+Insert the SD card into the reader and type `df -h` again:
 
 ```
 Filesystem 1K-blocks Used Available Use% Mounted on
@@ -663,7 +676,7 @@ Is activated automatically in the Rover SD cards / images that are provided. It 
 # 8) Post-Processing in RTKLIB
 For this task, I prefer to use not the 'original' RTKLIB version, but one that is forked from the original one which is more targeted towards low-cost receiver processing: [rtklibexplorer](https://github.com/rtklibexplorer/RTKLIB). Compilation of the code is exactly the same as for the 'normal' RTKLIB version. There are however, also Windows binaries available from the [website](https://rtkexplorer.com/downloads/rtklib-code/) of the developer.
 
-Since the GUI is much more comfortable to work with, I prefer to use wine again and the precompiled windows version of the developer. However, a short description, how to compile the source code is given further below. So download the latest windows version from the developer's website, extract the files and navigate to the folder via command line. Now start the program via wine:
+Since the GUI is much more comfortable to work with, I prefer to use wine again and the precompiled Windows version of the developer. However, a short description, how to compile the source code is given further below. So download the latest Windows version from the developer's website, extract the files and navigate to the folder via command line. Now start the program via wine:
 
 ```
 wine rtkpost.exe
@@ -717,24 +730,26 @@ Now, for the 'specific' configuration, download the example configuration from [
 
 It should create a .pos file at the specified directory.
 
-
-
 ## (Optional) Compilation of source code
+
 The equivalent to the rtkpost.exe GUI is the rnx2rtkp application (which is a command-line interface). To compile the rnx2rtkp applicatio, navigate in the command line to the RTKLIB folder and:
 
 ```
 cd app/rnx2rtkp/gcc
 make
 ```
-if you see iers.a does not exist, then
+if you see `iers.a` does not exist, then
 
-```sudo apt-get install gfortran```
+```shell
+sudo apt-get install gfortran
+```
 
-try to make the rnx2rtkp again.
+try to make the `rnx2rtkp` again.
 
 If that does not work:
 
-```cd RTKLIB/lib/iers/gcc
+```shell
+cd RTKLIB/lib/iers/gcc
 make
 ```
 
@@ -742,7 +757,7 @@ This process will take some minutes. It will create an executable which is a com
 
 ## (Optional) Instructions TZN-specific
 
-To download base station data, connect via ssh to the raspberry pi (base station) and locate the file(s) that you are interested in. The standard password for the user pi is raspberry.
+To download base station data, connect via SSH to the Raspberry PI (base station) and locate the file(s) that you are interested in. The standard password for the user pi is raspberry.
 
 You can find the IP addresses of the connected devices in the router configuration.
 
@@ -783,17 +798,17 @@ If the base station is not logging data correctly, the first thing to check is t
 
 #### Base does not log data (*.ubx files):
 
-If the data is still not logged afterwards, remotely connect via ssh to the Raspberry Pi
+If the data is still not logged afterwards, remotely connect via SSH to the Raspberry Pi
 
-E.g. via the IP address, or by ```ssh pi@raspberrypi.local```
+E.g. via the IP address, or by `ssh pi@raspberrypi.local`
 
-Check if the latest .ubx file size is increasing over time (e.g. via repeating ls -al and checking the file size manually). If the file size is increasing, the data is probably logged correctly. If it does not, then check the running processes with ```ps -aux```.
+Check if the latest .ubx file size is increasing over time (e.g. via repeating `ls -al` and checking the file size manually). If the file size is increasing, the data is probably logged correctly. If it does not, then check the running processes with `ps -aux`.
 
 There should be two processes from str2str. One that streams the data to the ntrip and the other one that logs the data into a file. If there is only one process from str2str, it means that the UART interface was probably not found correctly. This typically means that the wiring is not correctly set up. Type ```ls /dev/tty``` and press tab twice times to see if ttyS0 is there. If not, UART1 (TX, RX) is not found. The wiring is probably the problem or UART1 is not active on the raspberry pi (enable_uart=1 in config.txt on the boot partition).
 
 If ttyS0 is there, the automatic logging stream did not start. This may happen if the raspberry device is turned on before the antenna could capture any satellite data. If the antenna is in more or less clear-sky environment this should be however not the case. Instead it may be that the internal voltage is not correctly set up (check the IOREF and 5V_IN pins).
 
-To start the logging manually, copy the file-logging part from the startup script and execute it in the command line (but remember to remove the ‘&’ at the end). Monitor the output from it. If in both columns (data-in and data-out) there are quite big numbers, the logging works. If that is the case, you can end the process again and restart it with the ‘&’ at the end. The process should now work in the background. You can check again if the file size is increasing or not with ```ls -al```.
+To start the logging manually, copy the file-logging part from the startup script and execute it in the command line (but remember to remove the ‘&’ at the end). Monitor the output from it. If in both columns (data-in and data-out) there are quite big numbers, the logging works. If that is the case, you can end the process again and restart it with the ‘&’ at the end. The process should now work in the background. You can check again if the file size is increasing or not with `ls -al`.
 
 To hook upon a running stream (e.g. to check out the running str2str process), locate the PID via ps -aux and hook upon the stream via
 
@@ -807,23 +822,25 @@ Bear in mind that from now on every new mountpoint has to be registered on their
 After max. ~8hours (they claim) to send a password to you via email.
 
 #### Base does not stream data to rtk2go:
+
 Check the cabling and USB connections. Remember that the OTG cable has to be plugged into the USB slot where the antenna cable is on the ardusimple board.
-For troubleshooting, connect via ssh to the raspberry pi.
-To check if streaming / logging are running on the raspberry, type ```ps -aux | grep str2str```. If there are two programs from str2str running (must be 3 lines in total then), it means that the script at least tries to send the data.
+For troubleshooting, connect via SSH to the Raspberry Pi.
+
+To check if streaming / logging are running on the raspberry, type `ps -aux | grep str2str`. If there are two programs from str2str running (must be 3 lines in total then), it means that the script at least tries to send the data.
 
 Now it is recommended to check what’s going on with the streaming. For that hook on to the output of the stream via the process ID that you can see from the ps -aux command (the number on the left): ```sudo tail -f /proc/XXX/fd/1``` Where XXX is the process number.
 
 Check if the messages on the right are between ~2000bps and ~5000bps meaning that RTCM are probably sent from the receiver to the raspberry. If not, check the configuration of the ardusimple.
 
-If that is the case and the stream is not running online, then it will probably state something like rtcv error. It’s likely that your password is not configured correctly. Check the startup script. Typically that is the startup.sh, but check with ```sudo crontab -l``` which scripts are executed on startup. For example, it may be base.sh and base_logging.sh, So you’d have to configure the base.sh for streaming and adjust the mountpoint name and password there.
+If that is the case and the stream is not running online, then it will probably state something like rtcv error. It’s likely that your password is not configured correctly. Check the startup script. Typically that is the `startup.sh`, but check with `sudo crontab -l` which scripts are executed on startup. For example, it may be `base.sh` and `base_logging.sh`, So you’d have to configure the `base.sh` for streaming and adjust the mountpoint name and password there.
 
 Before you restart the stream, end the current streaming attempt by killing it with ```sudo kill XXX``` where XXX is the process number found from the ps -aux command.
 
 To restart the stream manually, copy the command and leave the ‘&’ out at the end. Type a sudo before the command and hit enter.
 
-It will restart the stream. Monitor if the stream is up again and if you are satisfied, end the stream with CTRL-C and restart it in the background. To do this, use the same command as before and add the ‘&’ at the end.
+It will restart the stream. Monitor if the stream is up again and if you are satisfied, end the stream with <kbd>CTRL-C</kbd> and restart it in the background. To do this, use the same command as before and add the ‘&’ at the end.
 
-Now you can close the ssh session by just hitting the ‘x’ of the terminal window. It will give you a warning but that is okay for now. Check online if your stream is still there.
+Now you can close the SSH session by just hitting the ‘x’ of the terminal window. It will give you a warning but that is okay for now. Check online if your stream is still there.
 
 # 10) Other resources
 [This explanatory video](https://www.youtube.com/watch?v=R0Hry5kR1jY) provides a lot of information about how Real Time Kinematic (RTK) and differential correction work.
