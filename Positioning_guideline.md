@@ -556,11 +556,9 @@ I provide two images (.img files) that contain already pre-compiled and pre-conf
 
 They can also be downloaded here:
 
-[Rover image](https://surfdrive.surf.nl/files/index.php/s/mMBktEBkdv5OPDa)
+https://drive.google.com/file/d/1UYbVYiMwYUqnRdEPbzlsimrnmca3Tv7i/view?usp=drivesdk
 
-[Base image](https://surfdrive.surf.nl/files/index.php/s/e7K4HJKvB0ymCdw)
-
-Password to access them is available upon request (we'll move them to a location not requiring a password as soon as we get around to it).
+https://drive.google.com/file/d/1yT-SbK4NyZC3jYns5vAydWEiDHTorPH2/view?usp=drivesdk
 
 If one wishes to flash another empty SD card as a base or rover, one can use the provided images. For this I recommend the program Etcher. One only has to select an image and the SD card as target. It will create two new ‘partitions’ on the SD card (bootfs and rootfs).
 
